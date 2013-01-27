@@ -13,19 +13,19 @@ setwd("/Users/Olivia/Documents/STA 232B")
 rawdat = read.table("lambs.txt", sep = ',', header=TRUE)
 x1 = as.numeric(rawdat[,"Age"] == 1)
 x2 = as.numeric(rawdat[,"Age"] == 2)
-dat = cbind(rawdat, x1, x2)
-dat = groupedData(Obs ~ Sire|Line, data = dat)
+rawdat = cbind(rawdat, x1, x2)
+lamb = groupedData(Obs ~ Sire|Line, data = rawdat)
 
 #ML and REML Estimates
-ml = lme(Obs ~ Line + x1 + x2 - 1, random = ~1|Sire, data = dat, method = "ML")
-reml = lme(Obs ~ Line + x1 + x2 - 1, random = ~1|Sire, data = dat)
+ml = lme(Obs ~ Line + x1 + x2 - 1, random = ~1|Sire, data = lamb, method = "ML")
+reml = lme(Obs ~ Line + x1 + x2 - 1, random = ~1|Sire, data = lamb)
 
 summary(ml)
 summary(reml)
 
-gen.LMM = function(model, dat, nboot){
-	sd.e = model$sigma #error sd
-	sd.s = diag(sqrt(getVarCov(model)))	#random effect sd
+gen.LMM = function(fit, dat, nboot){
+	sd.e = fit$sigma #error sd
+	sd.s = diag(sqrt(getVarCov(fit)))	#random effect sd
 	
 	X = cbind(as.numeric(dat[,"Line"] == 4), 
 		as.numeric(dat[,"Line"] == 1),	
@@ -33,7 +33,7 @@ gen.LMM = function(model, dat, nboot){
 		as.numeric(dat[,"Line"] == 3), 
 		as.numeric(dat[,"Line"] == 2), 
 		dat$x1, dat$x2)
-	B = fixef(model)
+	B = fixef(fit)
 	
 	temp = table(dat$Sire)
 	d = length(temp)
@@ -46,26 +46,25 @@ gen.LMM = function(model, dat, nboot){
 	V = R + Z %*% G %*% t(Z)
 	
 	mvrnorm(nboot, X %*% B, V)
-	return(dat)
+}
+
+est.sd = function(y, dat, model){
+	newdat = cbind(Obs = y, dat[ ,-1])
+	newdat = groupedData(Obs ~ Sire|Line, data = newdat)
+	fit = lme(Obs ~ Line + x1 + x2 - 1, random = ~1|Sire, data = newdat, method = model)
+	sd.e = fit$sigma
+	sd.s = diag(sqrt(getVarCov(fit)))[[1]]
+	c(fixef(fit), sd.e = sd.e, sd.s = sd.s)
 }
 
 #Bootstrap
 n.boot = 100
+y.boot.ml = gen.LMM(ml, lamb, n.boot)
+y.boot.reml = gen.LMM(reml, lamb, n.boot)
 
-#Initialize
-dat.boot.ml = gen.LMM(ml, dat, n.boot)
-dat.boot.reml = gen.LMM(reml, dat, n.boot)
-
-
-
-bootst = function(B, model = "REML", newdat){
-	sapply(1:B, function(i){
-		fit = lme(Obs ~ x1 + x2 - 1, random = ~1|Sire|Line, data = newdat, method = model)
-		sd.s = fit$sigma
-		sd.e = diag(sqrt(getVarCov(fit)))[1]
-		newdat = gen.LMM(fit, newdat)
-	})
-}
-
-s.boot = sd(bootst[,1])
-e.boot = sd(boost[,2])
+ML.sd = apply(y.boot.ml, 1, est.sd, dat = rawdat, model = "ML") ## 1 = row
+apply(ML.sd, 1, mean)
+apply(ML.sd, 1, sd)
+REML.sd = apply(y.boot.reml, 1, est.sd, dat = rawdat, model = "REML")
+apply(ML.sd, 1, mean)
+apply(REML.sd, 1, sd)
