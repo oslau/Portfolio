@@ -4,7 +4,7 @@ library(reshape2)
 #################
 ###USER INPUTS###
 #################
-grid.r = 20 ##number of rows
+grid.r = 10 ##number of rows
 grid.c = 10 ##number of columns
 rho = .5	##proportion of grid filled
 
@@ -22,7 +22,8 @@ colors = matrix(sample(c(1, 2), totcells, replace = TRUE), nrow = grid.r)
 possible = melt(colors)
 names(possible) = c("y", "x", "color")
 samp = sample(totcells, ncars)
-mysample = possible[samp, ]
+mysample = possible[samp,]
+#mysample = as.matrix(possible[samp, ])
 qplot(x, y, fill = as.factor(color), data = mysample, geom = 'tile') + scale_fill_manual(name = "Car Types", values = c("blue", "red"), labels = c("blue - up", "red - right"))
 
 ####################
@@ -76,6 +77,9 @@ move = function(i, dat, direction){
 #############
 ###TESTING###
 #############
+colors = matrix(0, nrow = grid.r, ncol = grid.c)
+colors = matrix(sample(0:2, totcells, replace = TRUE, prob = c(.5, .25, .25)), nrow = grid.r)
+image(colors, axes = FALSE, col = c("blue", "red", "white"))
 
 blue = which(mysample$color == 1)
 t(sapply(blue, move, dat = mysample, direction = "up"))
