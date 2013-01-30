@@ -17,26 +17,21 @@ totcells = grid.r * grid.c	##total number of cells
 ##############################
 ###GENERATE RANDOM CAR GRID###
 ##############################
-
-colors = matrix(sample(c(1, 2), totcells, replace = TRUE), nrow = grid.r)
-possible = melt(colors)
-names(possible) = c("y", "x", "color")
-samp = sample(totcells, ncars)
-mysample = possible[samp,]
-#mysample = as.matrix(possible[samp, ])
-qplot(x, y, fill = as.factor(color), data = mysample, geom = 'tile') + scale_fill_manual(name = "Car Types", values = c("blue", "red"), labels = c("blue - up", "red - right"))
+colors = c(rep(0, totcells-ncars), rep(1, ncars/2), rep(2, ncars/2))
+grid = matrix(sample(colors, totcells), nrow = grid.r)
+image(grid, axes = FALSE, col = c("white", "red", "blue"))
 
 ####################
 ###MOVE THAT CAR!###
 ####################
 
 ##This function changes the coordinates according to specified direction
-next.move = function(coords, dir){
+next.move = function(grid[i,j], dir){
 	switch(dir,
-		up = cbind(y = (coords[,"y"] + 1), x = coords[,"x"], color = coords[,"color"]),
-		down = cbind(y = (coords[,"y"] - 1), x = coords[,"x"], color = coords[,"color"]),
-		left = cbind(y = coords[,"y"], x =(coords[,"x"] - 1), color = coords[,"color"]),
-		right = cbind(y = coords[,"y"], x = (coords[,"x"] + 1), color = coords[,"color"])
+		up = grid[i, (j+1)],
+		down = grid[i, (j-1)],
+		left = grid[(i-1), j,
+		right = grid[(i+1), j]
 	)
 }
 
@@ -77,9 +72,8 @@ move = function(i, dat, direction){
 #############
 ###TESTING###
 #############
-colors = matrix(0, nrow = grid.r, ncol = grid.c)
-colors = matrix(sample(0:2, totcells, replace = TRUE, prob = c(.5, .25, .25)), nrow = grid.r)
-image(colors, axes = FALSE, col = c("blue", "red", "white"))
+curr.pos = grid[i, j]
+next.pos = grid[i, j+1]
 
 blue = which(mysample$color == 1)
 t(sapply(blue, move, dat = mysample, direction = "up"))
