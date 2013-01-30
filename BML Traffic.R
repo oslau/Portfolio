@@ -26,35 +26,29 @@ image(grid, axes = FALSE, col = c("white", "red", "blue"))
 ####################
 
 ##This function changes the coordinates according to specified direction
-next.move = function(grid[i,j], dir){
+next.move = function(i, j, dir){
 	switch(dir,
-		up = grid[i, (j+1)],
-		down = grid[i, (j-1)],
-		left = grid[(i-1), j,
-		right = grid[(i+1), j]
+		right = c(i=i, j=(j+1)),
+		left = c(i=i, j=(j-1)),
+		down = c(i=(i-1), j=j),
+		left = c(i=(i+1), j=j)
 	)
 }
 
 ##This function checks if the move generated aboce is off the grid
 ##If so, it will wrap around.
-off.grid = function(coords){
-	if(coords[,"y"] > grid.r){	
-		coords[,"y"] = 1
-	}
-	else{
-		if(coords[,"y"] < 1){
-			coords[,"y"] = grid.r
-		}
-	}
-	if(coords[,"x"] > grid.c){
-		coords[,"x"] = 1
-	}
-	else{
-		if(coords[,"x"] < 1){
-			coords[,"x"] = grid.c
-		}	
-	}
-	return(coords)
+off.grid = function(i, j){
+	if(i > grid.r)
+		i = 1
+	else
+		if(i < 1)
+			i = grid.r
+	if(j > grid.c)
+		j = 1
+	else
+		if(i < 1)
+			i = grid.c
+	c(i=i, j=j)
 }
 
 ##This function implements the car movement at time t
