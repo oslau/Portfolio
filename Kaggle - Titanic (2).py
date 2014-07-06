@@ -138,15 +138,12 @@ df['Gender'] = df['Sex'].map( {'female': 0, 'male': 1} ).astype(int)
 df.head(3)
 
 
-# In[79]:
-
-#do something similar for Embarked values
-#df['Embarked'].unique()
-df['Embarked2'] = df['Embarked']
-#fill NaN values with 'NA'
-df['Embarked2'].fillna('NA', inplace=True)
-df['Embarked2'] = df['Embarked2'].map( {'NA': 0, 'S': 1, 'C': 2, 'Q': 3} ).astype(int)
-
+# #do something similar for Embarked values
+# #df['Embarked'].unique()
+# df['Embarked2'] = df['Embarked']
+# #fill NaN values with 'NA'
+# df['Embarked2'].fillna('NA', inplace=True)
+# df['Embarked2'] = df['Embarked2'].map( {'NA': 0, 'S': 1, 'C': 2, 'Q': 3} ).astype(int)
 
 # In[81]:
 
@@ -197,9 +194,26 @@ df['FamilySize'] = df['Parch'] + df['SibSp']
 df['Age*Class'] = df.AgeFill * df.Pclass
 
 
-# In[80]:
+# In[90]:
+
+#which variable types are 'objects'
+df.dtypes[df.dtypes.map(lambda x: x=='object')]
+#let's drop them from the dataset
+df = df.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked'], axis =1)
+df = df.drop(['Age'], axis=1)
+#CAUTION: this piece drops entries where any variables have na values
+#df = df.dropna()
 
 
+# In[93]:
+
+train_data = df.values
+train_data
+
+
+# In[94]:
+
+data
 
 
 # In[ ]:
